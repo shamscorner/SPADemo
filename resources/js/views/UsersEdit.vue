@@ -1,0 +1,111 @@
+<template>
+  <div>
+    <div v-if="message" class="alert">{{ message }}</div>
+    <div v-if="! loaded">Loading...</div>
+    <form v-else @submit.prevent="onSubmit($event)">
+      <div class="form-group">
+        <label for="user_name">Name</label>
+        <input id="user_name" v-model="user.name" />
+      </div>
+      <div class="form-group">
+        <label for="user_email">Email</label>
+        <input id="user_email" type="email" v-model="user.email" />
+      </div>
+      <div class="form-group">
+        <button :disabled="saving" @click.prevent="goHome()">Cancel</button>
+        <button type="submit" :disabled="saving">Update</button>
+        <button :disabled="saving" @click.prevent="onDelete($event)">Delete</button>
+      </div>
+    </form>
+  </div>
+</template>
+
+<script>
+import api from "../api/users";
+
+export default {
+  data() {
+    return {
+      message: null,
+      saving: false,
+      loaded: false,
+      user: {
+        id: null,
+        name: "",
+        email: ""
+      }
+    };
+  },
+  methods: {
+    onSubmit(event) {
+      this.saving = true;
+
+      api
+        .update(this.user.id, {
+          name: this.user.name,
+          email: this.user.email
+        })
+        .then(response => {
+          this.message = "User updated";
+          setTimeout(() => {
+            this.message = null;
+            this.goHome();
+          }, 2000);
+        })
+        .catch(error => {
+          this.message = error.response.data.message || error.toString();
+          setTimeout(() => {
+            this.message = null;
+          }, 2000);
+        })
+        .then(_ => {
+          this.saving = false;
+        });
+    },
+    onDelete(event) {
+      this.saving = true;
+
+      api.delete(this.user.id).then(response => {
+        this.message = "User Deleted";
+        setTimeout(() => {
+          // redirect back to the users page
+          this.goHome();
+        }, 1000);
+      });
+    },
+    goHome() {
+      this.$router.push({ name: "users.index" });
+    }
+  },
+  created() {
+    api
+      .find(this.$route.params.id)
+      .then(response => {
+        setTimeout(() => {
+          this.loaded = true;
+          this.user = response.data.data;
+        }, 1000);
+      })
+      .catch(err => {
+        this.$router.push({ name: "404" });
+      });
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+$red: lighten(red, 30%);
+$darkRed: darken($red, 50%);
+.form-group label {
+  display: block;
+}
+.alert {
+  background: $red;
+  color: $darkRed;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  width: 50%;
+  border: 1px solid $darkRed;
+  border-radius: 5px;
+}
+</style>
