@@ -1,7 +1,11 @@
 import Vue from "vue";
+import BootstrapVue from "bootstrap-vue";
 import VueRouter from "vue-router";
 
 Vue.use(VueRouter);
+Vue.use(BootstrapVue);
+
+import "../sass/custom.scss";
 
 import App from "./views/App";
 import Hello from "./views/Hello";

@@ -1,22 +1,22 @@
 <template>
-  <div>
-    <div v-if="message" class="alert">{{ message }}</div>
-    <div v-if="! loaded">Loading...</div>
-    <form v-else @submit.prevent="onSubmit($event)">
-      <div class="form-group">
-        <label for="user_name">Name</label>
-        <input id="user_name" v-model="user.name" />
-      </div>
-      <div class="form-group">
-        <label for="user_email">Email</label>
-        <input id="user_email" type="email" v-model="user.email" />
-      </div>
-      <div class="form-group">
-        <button :disabled="saving" @click.prevent="goHome()">Cancel</button>
-        <button type="submit" :disabled="saving">Update</button>
-        <button :disabled="saving" @click.prevent="onDelete($event)">Delete</button>
-      </div>
-    </form>
+  <div class="mt-3">
+    <b-alert v-if="message" :variant="alertVariant" show>{{ message }}</b-alert>
+    <b-progress v-if="! loaded" :value="100" :max="100" show-progress animated class="mb-3"></b-progress>
+    <b-form v-else @submit.prevent="onSubmit($event)">
+      <b-form-group label="Full Name:" label-for="input-name">
+        <b-form-input id="input-name" v-model="user.name" type="text" required></b-form-input>
+      </b-form-group>
+
+      <b-form-group label="Email address:" label-for="input-email">
+        <b-form-input id="input-email" v-model="user.email" type="email" required></b-form-input>
+      </b-form-group>
+
+      <b-form-group>
+        <b-button variant="warning" :disabled="saving" @click.prevent="goHome()">Cancel</b-button>
+        <b-button type="submit" variant="success" :disabled="saving">Update</b-button>
+        <b-button variant="danger" :disabled="saving" @click.prevent="onDelete($event)">Delete</b-button>
+      </b-form-group>
+    </b-form>
   </div>
 </template>
 
@@ -33,12 +33,14 @@ export default {
         id: null,
         name: "",
         email: ""
-      }
+      },
+      alertVariant: "info"
     };
   },
   methods: {
     onSubmit(event) {
       this.saving = true;
+      this.loaded = true;
 
       api
         .update(this.user.id, {
@@ -46,7 +48,9 @@ export default {
           email: this.user.email
         })
         .then(response => {
+          this.loaded = false;
           this.message = "User updated";
+          this.alertVariant = "success";
           setTimeout(() => {
             this.message = null;
             this.goHome();
@@ -54,6 +58,7 @@ export default {
         })
         .catch(error => {
           this.message = error.response.data.message || error.toString();
+          this.alertVariant = "danger";
           setTimeout(() => {
             this.message = null;
           }, 2000);
@@ -64,9 +69,12 @@ export default {
     },
     onDelete(event) {
       this.saving = true;
+      this.loaded = true;
 
       api.delete(this.user.id).then(response => {
+        this.loaded = false;
         this.message = "User Deleted";
+        this.alertVariant = "success";
         setTimeout(() => {
           // redirect back to the users page
           this.goHome();
@@ -92,20 +100,3 @@ export default {
   }
 };
 </script>
-
-<style lang="scss" scoped>
-$red: lighten(red, 30%);
-$darkRed: darken($red, 50%);
-.form-group label {
-  display: block;
-}
-.alert {
-  background: $red;
-  color: $darkRed;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  width: 50%;
-  border: 1px solid $darkRed;
-  border-radius: 5px;
-}
-</style>

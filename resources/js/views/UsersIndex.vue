@@ -1,27 +1,42 @@
 <template>
-  <div class="users">
-    <div class="loading" v-if="loading">Loading...</div>
+  <div>
+    <b-progress v-if="loading" :value="100" :max="100" show-progress animated class="mb-3 mt-2"></b-progress>
 
-    <div v-if="error" class="error">{{ error }}</div>
+    <div v-if="error">{{ error }}</div>
 
-    <div>
-      <router-link :to="{ name: 'users.create' }">Add User</router-link>
+    <div class="text-right">
+      <router-link :to="{ name: 'users.create' }">
+        <b-button variant="info">Add New User</b-button>
+      </router-link>
     </div>
 
-    <ul v-if="users">
-      <li v-for="({ id, name, email }, index) in users" :key="index">
-        <strong>Name:</strong>
-        {{ name }},
-        <strong>Email:</strong>
-        {{ email }}
-        <router-link :to="{ name: 'users.edit', params: { id } }">Edit</router-link>
-      </li>
-    </ul>
+    <table class="table table-striped" v-if="users">
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Name</th>
+          <th scope="col">Email</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="{id, name, email} in users" :key="id">
+          <td>{{ id }}</td>
+          <td>{{ name }}</td>
+          <td>{{ email }}</td>
+          <td>
+            <router-link :to="{ name: 'users.edit', params: { id } }">
+              <b-button size="sm" variant="primary">Edit</b-button>
+            </router-link>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-    <div class="pagination">
-      <button :disabled="! prevPage" @click.prevent="goToPrev">Previous</button>
-      {{ paginatonCount }}
-      <button :disabled="! nextPage" @click.prevent="goToNext">Next</button>
+    <div class="inline-block">
+      <b-button :disabled="! prevPage" @click.prevent="goToPrev">Previous</b-button>
+      <span class="font-weight-bold text-capitalize">&nbsp;{{ paginatonCount }}&nbsp;</span>
+      <b-button :disabled="! nextPage" @click.prevent="goToNext">Next</b-button>
     </div>
   </div>
 </template>
